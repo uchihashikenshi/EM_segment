@@ -1,9 +1,7 @@
 import argparse
 import os
-import scipy.misc
-import numpy as np
 
-from model import pix2pix
+from model import Pix2pix
 import tensorflow as tf
 
 parser = argparse.ArgumentParser(description='')
@@ -36,6 +34,7 @@ parser.add_argument('--L1_lambda', dest='L1_lambda', type=float, default=100.0, 
 
 args = parser.parse_args()
 
+
 def main(_):
     if not os.path.exists(args.checkpoint_dir):
         os.makedirs(args.checkpoint_dir)
@@ -45,7 +44,7 @@ def main(_):
         os.makedirs(args.test_dir)
 
     with tf.Session() as sess:
-        model = pix2pix(sess, image_size=args.fine_size, batch_size=args.batch_size,
+        model = Pix2pix(sess, image_size=args.fine_size, batch_size=args.batch_size,
                         output_size=args.fine_size, dataset_name=args.dataset_name,
                         checkpoint_dir=args.checkpoint_dir, sample_dir=args.sample_dir)
 
