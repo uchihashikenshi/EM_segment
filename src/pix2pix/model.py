@@ -1,11 +1,13 @@
 from __future__ import division
 import os
+import sys
 import time
 from glob import glob
 import tensorflow as tf
 import numpy as np
 from six.moves import xrange
 
+sys.path.append('/home/uchihashi/EM_segment/src')
 from ops import *
 from utils import *
 
