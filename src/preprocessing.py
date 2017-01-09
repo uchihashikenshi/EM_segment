@@ -28,12 +28,14 @@ data---raw--------------------train-input
 
 class Preprocessing(object):
 
-    def __init__(self, tif_data_dir, mem_cgan_home=os.getcwd()):
-        self.tif_data_dir = tif_data_dir
+    def __init__(self, tif_data_path, data_name, mem_cgan_home=os.getcwd()):
+        self.tif_data_path = tif_data_path
         self.mem_cgan_home = mem_cgan_home
+        self.data_name = data_name
+        self.save_data_path = '{0}/data/{1}/preprocessed/'.format(self.mem_cgan_home, self.data_name)
 
     def load_tif_images(self, data_name=''):
-        os.chdir(self.tif_data_dir + '/' + data_name)
+        os.chdir(self.tif_data_path + '/' + data_name)
         files = glob.glob('*.tif')
         os.chdir(self.mem_cgan_home)
         return files
@@ -114,47 +116,50 @@ class Preprocessing(object):
         labels = self.load_tif_images(label_data_dir)
 
         # train dataを置くディレクトリを作成
-        if os.path.exists("%s/data/preprocessed/%strain" % (self.mem_cgan_home, prefix)):
-            print "%s/data/preprocessed/%strain already exist." % (self.mem_cgan_home, prefix)
+        if os.path.exists("{0}{1}train".format(self.save_data_path, prefix)):
+            print "{0}{1}train already exist.".format(self.save_data_path, prefix)
             return
         else:
-            os.mkdir("%s/data/preprocessed/%strain" % (self.mem_cgan_home, prefix))
-            os.mkdir("%s/data/preprocessed/%strain/input" % (self.mem_cgan_home, prefix))
-            os.mkdir("%s/data/preprocessed/%strain/label" % (self.mem_cgan_home, prefix))
+            os.mkdir("{0}{1}train".format(self.save_data_path, prefix))
+            os.mkdir("{0}{1}train/input".format(self.save_data_path, prefix))
+            os.mkdir("{0}{1}train/label".format(self.save_data_path, prefix))
 
         # test dataを置くディレクトリを作成
-        if os.path.exists("%s/data/preprocessed/%stest" % (self.mem_cgan_home, prefix)):
-            print "%s/data/preprocessed/%stest already exist." % (self.mem_cgan_home, prefix)
+        if os.path.exists("{0}{1}test".format(self.save_data_path, prefix)):
+            print "{0}{1}test already exist.".format(self.save_data_path, prefix)
             return
         else:
-            os.mkdir("%s/data/preprocessed/%stest" % (self.mem_cgan_home, prefix))
-            os.mkdir("%s/data/preprocessed/%stest/input" % (self.mem_cgan_home, prefix))
-            os.mkdir("%s/data/preprocessed/%stest/label" % (self.mem_cgan_home, prefix))
+            os.mkdir("{0}{1}test".format(self.save_data_path, prefix))
+            os.mkdir("{0}{1}test/input".format(self.save_data_path, prefix))
+            os.mkdir("{0}{1}test/label".format(self.save_data_path, prefix))
 
         file_index = 0
-        crop_num = int(((image_size - crop_size) / stride + 1)**2)
-        print len(files)
         for _file, label in zip(files, labels):
             file_index += 1
-            # 縦横の切り取り回数を計算(適当)
-            for h in xrange(crop_num):
+            for h in xrange(int((image_size - crop_size) / stride)):
                 for w in xrange(int((image_size - crop_size) / stride)):
 
                     # 画像のサイズを指定
                     patch_range = (w * stride, h * stride, w * stride + crop_size, h * stride + crop_size)
-                    cropped_image = Image.open("%s/%s/%s" % (self.tif_data_dir, data_dir, _file)).crop(patch_range)
-                    cropped_label = Image.open("%s/%s/%s" % (self.tif_data_dir, label_data_dir, label)).crop(patch_range)
+                    cropped_image = Image.open("{0}/{1}/{2}".format(self.tif_data_path, data_dir, _file)).crop(patch_range)
+                    cropped_label = Image.open("{0}/{1}/{2}".format(self.tif_data_path, label_data_dir, label)).crop(patch_range)
+
+                    canvas = Image.new('L', (512, 256), 255)
+                    canvas.paste(cropped_label, (0, 0))
+                    canvas.paste(cropped_image, (256, 0))
 
                     # 保存部分
-                    if file_index <= 27:
-                        cropped_image.save("%s/data/preprocessed/%strain/input/image_%03d%03d%03d.jpg" % (self.mem_cgan_home, prefix, file_index, h, w))
-                        cropped_label.save("%s/data/preprocessed/%strain/label/label_%03d%03d%03d.jpg" % (self.mem_cgan_home, prefix, file_index, h, w))
+                    if file_index <= int(len(files) * 0.9):
+                        canvas.save("%s%strain/image_%03d%03d%03d.jpg" % (self.save_data_path, prefix, file_index, h, w))
+                        cropped_image.save("%s%strain/input/input_%03d%03d%03d.jpg" % (self.save_data_path, prefix, file_index, h, w))
+                        cropped_label.save("%s%strain/label/label_%03d%03d%03d.jpg" % (self.save_data_path, prefix, file_index, h, w))
                     else:
-                        cropped_image.save("%s/data/preprocessed/%stest/input/image_%03d%03d%03d.jpg" % (self.mem_cgan_home, prefix, file_index, h, w))
-                        cropped_label.save("%s/data/preprocessed/%stest/label/label_%03d%03d%03d.jpg" % (self.mem_cgan_home, prefix, file_index, h, w))
+                        canvas.save("%s%stest/image_%03d%03d%03d.jpg" % (self.save_data_path, prefix, file_index, h, w))
+                        cropped_image.save("%s%stest/input/input_%03d%03d%03d.jpg" % (self.save_data_path, prefix, file_index, h, w))
+                        cropped_label.save("%s%stest/label/label_%03d%03d%03d.jpg" % (self.save_data_path, prefix, file_index, h, w))
 
             if file_index % 10 == 0:
-                print "%s images ended" % file_index
+                print "{0} images ended".format(file_index)
 
             # if file_index == crop_num * 0.8:
             #     print "%straining_dataset is created." % prefix
@@ -164,8 +169,9 @@ class Preprocessing(object):
 
 if __name__ == '__main__':
     try:
-        tif_data_dir = sys.argv[1]
-        preprocessing = Preprocessing(tif_data_dir=tif_data_dir)
+        tif_data_path = sys.argv[1]
+        data_name = sys.argv[2]
+        preprocessing = Preprocessing(tif_data_path=tif_data_path, data_name=data_name)
         preprocessing.patch_extract(data_dir='train/input', label_data_dir='train/label')
     except IndexError:
         quit()
