@@ -133,6 +133,7 @@ class Preprocessing(object):
 
         file_index = 0
         crop_num = int(((image_size - crop_size) / stride + 1)**2)
+        print len(files)
         for _file, label in zip(files, labels):
             file_index += 1
             # 縦横の切り取り回数を計算(適当)
@@ -145,7 +146,7 @@ class Preprocessing(object):
                     cropped_label = Image.open("%s/%s/%s" % (self.tif_data_dir, label_data_dir, label)).crop(patch_range)
 
                     # 保存部分
-                    if file_index <= crop_num * 0.8:
+                    if file_index <= 27:
                         cropped_image.save("%s/data/preprocessed/%strain/input/image_%03d%03d%03d.jpg" % (self.mem_cgan_home, prefix, file_index, h, w))
                         cropped_label.save("%s/data/preprocessed/%strain/label/label_%03d%03d%03d.jpg" % (self.mem_cgan_home, prefix, file_index, h, w))
                     else:
