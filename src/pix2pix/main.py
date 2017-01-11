@@ -31,6 +31,7 @@ parser.add_argument('--checkpoint_dir', dest='checkpoint_dir', default='./checkp
 parser.add_argument('--sample_dir', dest='sample_dir', default='./sample', help='sample are saved here')
 parser.add_argument('--test_dir', dest='test_dir', default='./test', help='test sample are saved here')
 parser.add_argument('--test_input_dir', dest='test_input_dir', default='../../data/ISBI_2012_EM_segmentation_challenge/preprocessed/val', help='test by this data')
+parser.add_argument('--test_input_dir_prefix', dest='test_input_dir_prefix', default='', help='prefix of test input dir')
 parser.add_argument('--L1_lambda', dest='L1_lambda', type=float, default=100.0, help='weight on L1 term in objective')
 
 args = parser.parse_args()
@@ -48,7 +49,7 @@ def main(_):
         model = Pix2pix(sess, image_size=args.fine_size, batch_size=args.batch_size,
                         output_size=args.fine_size, dataset_name=args.dataset_name,
                         checkpoint_dir=args.checkpoint_dir, sample_dir=args.sample_dir,
-                        test_input_dir=args.test_input_dir)
+                        test_input_dir=args.test_input_dir, test_input_dir_prefix=args.test_input_dir_prefix)
 
         if args.phase == 'train':
             model.train(args)

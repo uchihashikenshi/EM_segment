@@ -14,8 +14,8 @@ from utils import *
 
 
 class Pix2pix(object):
-    def __init__(self, sess, test_input_dir, image_size=256,
-                 batch_size=1, sample_size=1, output_size=256,
+    def __init__(self, sess, test_input_dir, test_input_dir_prefix,
+                 image_size=256, batch_size=1, sample_size=1, output_size=256,
                  gf_dim=64, df_dim=64, L1_lambda=100,
                  input_c_dim=1, output_c_dim=1, dataset_name='facades',
                  checkpoint_dir=None, sample_dir=None):
@@ -32,6 +32,7 @@ class Pix2pix(object):
         """
         self.sess = sess
         self.test_input_dir = test_input_dir
+        self.test_input_dir_prefix = test_input_dir_prefix
         self.is_grayscale = (input_c_dim == 1)
         self.batch_size = batch_size
         self.image_size = image_size
@@ -390,7 +391,7 @@ class Pix2pix(object):
         """Test pix2pix"""
         tf.initialize_all_variables().run()
 
-        sample_files = glob('{}/*.jpg'.format(self.test_input_dir))
+        sample_files = glob('{}/{}*.jpg'.format(self.test_input_dir, self.test_input_dir_prefix))
 
         # sort testing input
         # n = [int(i) for i in map(lambda x: x.split('/')[-1].split('.jpg')[0], sample_files)]
@@ -427,6 +428,6 @@ class Pix2pix(object):
                 feed_dict={self.real_data: sample_image}
             )
             print(samples.shape)
-            save_images(samples, [self.batch_size, 1],'{}/test_{:04d}.png'.format(args.test_dir, idx))
+            save_images(samples, [self.batch_size, 1],'{}/{}_{:04d}.png'.format(args.test_dir, self.test_input_dir_prefix, idx))
             # samples = Image.fromarray(np.uint8(samples).reshape(256, 256))
             # samples.save('{}/test_{:04d}.png'.format(args.test_dir, idx))
