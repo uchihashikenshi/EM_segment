@@ -393,8 +393,8 @@ class Pix2pix(object):
 
         # sort testing input
         # n = [int(i) for i in map(lambda x: x.split('/')[-1].split('.jpg')[0], sample_files)]
-        n = [int(i) for i in xrange(120)]
-        sample_files = [x for (y, x) in sorted(zip(n, sample_files))]
+        # n = [int(i) for i in xrange(120)]
+        # sample_files = [x for (y, x) in sorted(zip(n, sample_files))]
 
         # load testing input
         print("Loading testing images ...")
@@ -406,8 +406,8 @@ class Pix2pix(object):
         else:
             sample_images = np.array(sample).astype(np.float32)
 
-        sample_images = [sample_images[i:i+self.batch_size]
-                         for i in xrange(0, len(sample_images), self.batch_size)]
+        # sample_images = [sample_images[i:i+self.batch_size]
+        #                  for i in xrange(0, len(sample_images), self.batch_size)]
         sample_images = np.array(sample_images)
         print(sample_images.shape)
 
@@ -424,5 +424,5 @@ class Pix2pix(object):
                 self.fake_B_sample,
                 feed_dict={self.real_data: sample_image}
             )
-            save_images(samples, [self.batch_size, 1],
+            save_images(samples,
                         '{}/test_{:04d}.png'.format(args.test_dir, idx))
