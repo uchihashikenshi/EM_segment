@@ -390,8 +390,7 @@ class Pix2pix(object):
     def test(self, args):
         """Test pix2pix"""
         tf.initialize_all_variables().run()
-
-        sample_files = glob('{}/{}*.jpg'.format(self.test_input_dir, self.test_input_dir_prefix))
+        sample_files = glob('{}/slice_{:03d}*.jpg'.format(self.test_input_dir, self.test_input_dir_prefix))
 
         # sort testing input
         # n = [int(i) for i in map(lambda x: x.split('/')[-1].split('.jpg')[0], sample_files)]
