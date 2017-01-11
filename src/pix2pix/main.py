@@ -30,6 +30,7 @@ parser.add_argument('--serial_batch_iter', dest='serial_batch_iter', type=bool, 
 parser.add_argument('--checkpoint_dir', dest='checkpoint_dir', default='./checkpoint', help='models are saved here')
 parser.add_argument('--sample_dir', dest='sample_dir', default='./sample', help='sample are saved here')
 parser.add_argument('--test_dir', dest='test_dir', default='./test', help='test sample are saved here')
+parser.add_argument('--test_input_dir', dest='test_input_dir', default='../../data/ISBI_2012_EM_segmentation_challenge/preprocessed/val', help='test by this data')
 parser.add_argument('--L1_lambda', dest='L1_lambda', type=float, default=100.0, help='weight on L1 term in objective')
 
 args = parser.parse_args()
@@ -46,7 +47,8 @@ def main(_):
     with tf.Session() as sess:
         model = Pix2pix(sess, image_size=args.fine_size, batch_size=args.batch_size,
                         output_size=args.fine_size, dataset_name=args.dataset_name,
-                        checkpoint_dir=args.checkpoint_dir, sample_dir=args.sample_dir)
+                        checkpoint_dir=args.checkpoint_dir, sample_dir=args.sample_dir,
+                        test_input_dir=args.test_input_dir)
 
         if args.phase == 'train':
             model.train(args)

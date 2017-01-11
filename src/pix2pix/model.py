@@ -13,7 +13,7 @@ from utils import *
 
 
 class Pix2pix(object):
-    def __init__(self, sess, image_size=256,
+    def __init__(self, sess, test_input_dir, image_size=256,
                  batch_size=1, sample_size=1, output_size=256,
                  gf_dim=64, df_dim=64, L1_lambda=100,
                  input_c_dim=1, output_c_dim=1, dataset_name='facades',
@@ -30,6 +30,7 @@ class Pix2pix(object):
             output_c_dim: (optional) Dimension of output image color. For grayscale input, set to 1. [3]
         """
         self.sess = sess
+        self.test_input_dir = test_input_dir
         self.is_grayscale = (input_c_dim == 1)
         self.batch_size = batch_size
         self.image_size = image_size
@@ -388,11 +389,11 @@ class Pix2pix(object):
         """Test pix2pix"""
         tf.initialize_all_variables().run()
 
-        sample_files = glob('../../data/{}/preprocessed/val/*.jpg'.format(self.dataset_name))
+        sample_files = glob('{}/*.jpg'.format(self.test_input_dir))
 
         # sort testing input
         # n = [int(i) for i in map(lambda x: x.split('/')[-1].split('.jpg')[0], sample_files)]
-        n = [int(i) for i in xrange(4)]
+        n = [int(i) for i in xrange(120)]
         sample_files = [x for (y, x) in sorted(zip(n, sample_files))]
 
         # load testing input
@@ -401,7 +402,7 @@ class Pix2pix(object):
 
         if (self.is_grayscale):
             sample_images = np.array(sample).astype(np.float32)[:, :, :, None]
-            sample_images = sample_images.reshape((4, 256, 256, 2))
+            sample_images = sample_images.reshape((120, 256, 256, 2))
         else:
             sample_images = np.array(sample).astype(np.float32)
 
@@ -424,4 +425,4 @@ class Pix2pix(object):
                 feed_dict={self.real_data: sample_image}
             )
             save_images(samples, [self.batch_size, 1],
-                        './{}/test_{:04d}.png'.format(args.test_dir, idx))
+                        '{}/test_{:04d}.png'.format(args.test_dir, idx))
