@@ -404,7 +404,7 @@ class Pix2pix(object):
 
         if (self.is_grayscale):
             sample_images = np.array(sample).astype(np.float32)[:, :, :, None]
-            sample_images = sample_images.reshape((120, 256, 256, 2))
+            sample_images = sample_images.reshape((4, 256, 256, 2))
         else:
             sample_images = np.array(sample).astype(np.float32)
 
