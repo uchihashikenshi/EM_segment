@@ -13,16 +13,15 @@ Annotation
 data_type: trainingとかtestとか
 data_dir: データを入れてるディレクトリの名前。data/raw/(data_type)/まではprefix
 ディレクトリ構造:
-data---raw--------------------train-input
-     |     |------------------test-input
-     |     |------------------train-labels
-     |-preprocessed_dataset---training------median_extract_training_dataset
-     |                      |          |----pooled_training_dataset
-     |                      |-test----------median_extract_test_dataset
-     |                                 |----pooled_test_dataset
-     |-training_dataset
-     |-test-dataset
-     |-lmdb
+data--original_data-----------------------------train-|--input
+     |                                       |         --label
+     |                                        --test-----input
+     |
+      ---ISBI_2012_EM_segmentation_challenge----challenge
+                                             |--preprocessed-|--train
+                                             |               |--test
+                                             |                --val
+                                              --reconstruction
 """
 
 
