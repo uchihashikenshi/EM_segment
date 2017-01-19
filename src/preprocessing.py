@@ -46,68 +46,6 @@ class Preprocessing(object):
         raw_matrix = np.array(list(raw_image.getdata())).reshape(1024, 1024)
         return raw_matrix
 
-    def make_median_extracted_dataset(self, data_type):
-        files = self.load_tif_images()
-
-        if os.path.exists("%s/data/preprocessed/%s/median_extract_%s_dataset" % (mem_cgan_home, data_type, data_type)) != True:
-            os.mkdir("%s/data/preprocessed/%s/median_extract_%s_dataset" % (mem_cgan_home, data_type, data_type)) # データ置き場用意
-
-        # スタック中全画像からmedianを求める(medianの平均値)
-        # fixme: medianの平均でいいのか・・・？
-        N, _sum = 0, 0
-        for _file in files:
-            raw_matrix = self.image_to_array("data/%s/%s" % (_file))
-            median = np.median(raw_matrix)
-            _sum += median
-            N += 1
-        stack_median = _sum / N
-
-        file_num = 1
-        for _file in files:
-            raw_matrix = self.image_to_array("data/%s/%s" % (_file))
-            median = np.median(raw_matrix) #中央値
-            # スタックのmedianに各画像のmedianを合わせる
-            median_extract_matrix = (raw_matrix - (median - stack_median))
-
-            # 負の画素値を0に補正
-            # fixme: こんな処理を入れずにスマートにやりたい
-            for i in range(1024):
-                for j in range(1024):
-                    if median_extract_matrix[i][j] < 0:
-                        median_extract_matrix[i][j] = 0
-
-            median_extract_image = Image.fromarray(np.uint8(median_extract_matrix).reshape(1024, 1024))
-            median_extract_image.save("%s/data/preprocessed/%s/median_extract_%s_dataset/median_extract_image_%03d.tif" % (mem_cgan_home, data_type, data_type, file_num))
-            file_num += 1
-            if file_num % 10 == 0:
-                print "%s images ended" % file_num
-        print "median_extract_%s_dataset is created." % data_type
-
-    def make_average_pooled_dataset(self, data_type, data_dir):
-        filelist = self.load_tif_images(data_dir)
-
-        if os.path.exists("%s/data/preprocessed/%s/pooled_%s_dataset" % (mem_cgan_home, data_type, data_type)) != True:
-            os.mkdir("%s/data/preprocessed/%s/pooled_%s_dataset" % (mem_cgan_home, data_type, data_type)) # データ置き場用意
-
-        file_num = 1
-        for file in filelist:
-            raw_matrix = self.image_to_array("data/%s/%s" % (data_dir, file))
-            pooled_matrix = []
-            for i in range(int(1024 / 4)):
-                for j in range(int(1024 / 4)):
-                    _sum = 0
-                    for k in range(4):
-                        for l in range(4):
-                            _sum += raw_matrix[4 * i + k, 4 * j + l]
-                    pooled_pixel = _sum / 16
-                    pooled_matrix.append(pooled_pixel)
-            pooled_image = Image.fromarray(np.uint8(pooled_matrix).reshape(256, 256))
-            pooled_image.save("%s/data/preprocessed/%s/pooled_%s_dataset/pooled_image_%03d.tif" % (mem_cgan_home, data_type, data_type, file_num))
-            file_num += 1
-            if file_num % 10 == 0:
-                print "%s images ended" % file_num
-        print "pooled_%s_dataset is created." % data_type
-
     def patch_extract(self, data_dir, label_data_dir, prefix='', image_size=512, crop_size=256, stride=16):
         """
         1 stackをtraining 80枚、test20枚に分ける
