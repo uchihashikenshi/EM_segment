@@ -1,3 +1,5 @@
+# coding:utf-8
+
 """
 Some codes from https://github.com/Newmu/dcgan_code
 """
@@ -42,6 +44,16 @@ def load_image(image_path):
 
 
 def preprocess_A_and_B(img_A, img_B, load_size=286, fine_size=256, flip=True, is_test=False):
+    """
+    train時のみmultipule croppingを行う.
+    :param img_A:
+    :param img_B:
+    :param load_size:
+    :param fine_size:
+    :param flip:
+    :param is_test:
+    :return:
+    """
     if is_test:
         img_A = scipy.misc.imresize(img_A, [fine_size, fine_size])
         img_B = scipy.misc.imresize(img_B, [fine_size, fine_size])

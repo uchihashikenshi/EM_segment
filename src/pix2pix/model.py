@@ -427,6 +427,6 @@ class Pix2pix(object):
                 feed_dict={self.real_data: sample_image}
             )
             print(samples.shape)
-            save_images(samples, [self.batch_size, 1],'{}/slice{}_{:04d}.png'.format(args.test_dir, self.test_input_dir_prefix, idx))
+            save_images(samples, [self.batch_size, 1], '{}/slice{}_{:04d}.png'.format(args.test_dir, self.test_input_dir_prefix, idx))
             # samples = Image.fromarray(np.uint8(samples).reshape(256, 256))
             # samples.save('{}/test_{:04d}.png'.format(args.test_dir, idx))
