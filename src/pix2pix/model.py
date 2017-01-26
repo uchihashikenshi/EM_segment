@@ -6,6 +6,7 @@ from glob import glob
 import tensorflow as tf
 import numpy as np
 from six.moves import xrange
+from PIL import Image
 
 sys.path.append('/home/uchihashi/EM_segment/src')
 from ops import *
@@ -13,10 +14,10 @@ from utils import *
 
 
 class Pix2pix(object):
-    def __init__(self, sess, image_size=256,
-                 batch_size=1, sample_size=1, output_size=256,
+    def __init__(self, sess, test_input_dir, test_input_dir_prefix,
+                 image_size=256, batch_size=1, sample_size=1, output_size=256,
                  gf_dim=64, df_dim=64, L1_lambda=100,
-                 input_c_dim=3, output_c_dim=3, dataset_name='facades',
+                 input_c_dim=1, output_c_dim=1, dataset_name='facades',
                  checkpoint_dir=None, sample_dir=None):
         """
 
@@ -30,6 +31,8 @@ class Pix2pix(object):
             output_c_dim: (optional) Dimension of output image color. For grayscale input, set to 1. [3]
         """
         self.sess = sess
+        self.test_input_dir = test_input_dir
+        self.test_input_dir_prefix = test_input_dir_prefix
         self.is_grayscale = (input_c_dim == 1)
         self.batch_size = batch_size
         self.image_size = image_size
@@ -112,11 +115,12 @@ class Pix2pix(object):
         self.saver = tf.train.Saver()
 
     def load_random_samples(self):
-        data = np.random.choice(glob('../datasets/{}/val/*.jpg'.format(self.dataset_name)), self.batch_size)
+        data = np.random.choice(glob('../../data/{}/preprocessed/test/*.jpg'.format(self.dataset_name)), self.batch_size)
         sample = [load_data(sample_file) for sample_file in data]
 
         if (self.is_grayscale):
             sample_images = np.array(sample).astype(np.float32)[:, :, :, None]
+            sample_images = sample_images.reshape((1, 256, 256, 2))
         else:
             sample_images = np.array(sample).astype(np.float32)
         return sample_images
@@ -153,7 +157,7 @@ class Pix2pix(object):
             print(" [!] Load failed...")
 
         for epoch in xrange(args.epoch):
-            data = glob('../datasets/{}/train/*.jpg'.format(self.dataset_name))
+            data = glob('../../data/{}/preprocessed/train/*.jpg'.format(self.dataset_name))
             #np.random.shuffle(data)
             batch_idxs = min(len(data), args.train_size) // self.batch_size
 
@@ -162,6 +166,7 @@ class Pix2pix(object):
                 batch = [load_data(batch_file) for batch_file in batch_files]
                 if (self.is_grayscale):
                     batch_images = np.array(batch).astype(np.float32)[:, :, :, None]
+                    batch_images = batch_images.reshape((1, 256, 256, 2))
                 else:
                     batch_images = np.array(batch).astype(np.float32)
 
@@ -385,12 +390,12 @@ class Pix2pix(object):
     def test(self, args):
         """Test pix2pix"""
         tf.initialize_all_variables().run()
-
-        sample_files = glob('../datasets/{}/val/*.jpg'.format(self.dataset_name))
+        sample_files = glob('{}/slice_{:03d}*.jpg'.format(self.test_input_dir, int(self.test_input_dir_prefix)))
 
         # sort testing input
-        n = [int(i) for i in map(lambda x: x.split('/')[-1].split('.jpg')[0], sample_files)]
-        sample_files = [x for (y, x) in sorted(zip(n, sample_files))]
+        # n = [int(i) for i in map(lambda x: x.split('/')[-1].split('.jpg')[0], sample_files)]
+        # n = [int(i) for i in xrange(120)]
+        # sample_files = [x for (y, x) in sorted(zip(n, sample_files))]
 
         # load testing input
         print("Loading testing images ...")
@@ -398,6 +403,7 @@ class Pix2pix(object):
 
         if (self.is_grayscale):
             sample_images = np.array(sample).astype(np.float32)[:, :, :, None]
+            sample_images = sample_images.reshape((4, 256, 256, 2))
         else:
             sample_images = np.array(sample).astype(np.float32)
 
@@ -415,9 +421,12 @@ class Pix2pix(object):
         for i, sample_image in enumerate(sample_images):
             idx = i+1
             print("sampling image ", idx)
+            # sample_image = sample_image.reshape((1, 256, 256, 2))
             samples = self.sess.run(
                 self.fake_B_sample,
                 feed_dict={self.real_data: sample_image}
             )
-            save_images(samples, [self.batch_size, 1],
-                        './{}/test_{:04d}.png'.format(args.test_dir, idx))
+            print(samples.shape)
+            save_images(samples, [self.batch_size, 1], '{}/slice{}_{:04d}.png'.format(args.test_dir, self.test_input_dir_prefix, idx))
+            # samples = Image.fromarray(np.uint8(samples).reshape(256, 256))
+            # samples.save('{}/test_{:04d}.png'.format(args.test_dir, idx))
